@@ -25,6 +25,8 @@ package edumips64.core;
 
 import java.util.*;
 import java.util.logging.Logger;
+
+import core.BranchPredictor;
 import edumips64.core.is.*;
 import edumips64.utils.*;
 
@@ -288,7 +290,10 @@ public class CPU
 				pipe.put(PipeStatus.ID, pipe.get(PipeStatus.IF));
 				pipe.put(PipeStatus.IF, mem.getInstruction(pc));
 				old_pc.writeDoubleWord((pc.getValue()));
-				pc.writeDoubleWord((pc.getValue())+4);
+				//Add IF logic here
+				Instruction nextCommand = pipe.get(PipeStatus.IF);
+				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
+				pc.writeDoubleWord((pc.getValue())+offset);
 			}
 			else
 			{
