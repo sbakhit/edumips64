@@ -25,6 +25,8 @@ package edumips64.core;
 
 import java.util.*;
 import java.util.logging.Logger;
+
+import core.BranchPredictor;
 import edumips64.core.is.*;
 import edumips64.utils.*;
 
@@ -36,8 +38,7 @@ public class CPU
 	private Memory mem;
 	private Register[] gpr;
     private static final Logger logger = Logger.getLogger(CPU.class.getName());
-	ArrayList<long[]> globalHistoryTable = new ArrayList<long[]>();
-	int globalBranchHistory = 0;
+
 	
     /** Program Counter*/
 	private Register pc,old_pc;
@@ -291,30 +292,8 @@ public class CPU
 				old_pc.writeDoubleWord((pc.getValue()));
 				//Add IF logic here
 				Instruction nextCommand = pipe.get(PipeStatus.IF);
-				String commandName = nextCommand.getName();
-				if (commandName == "BEQ" || commandName == "BEQZ" || commandName == "BGEZ" || commandName == "BNE" || commandName == "BNEZ"){
-					//Current command in IF is a branch
-					logger.info("Handling Branch instruction");
-					boolean entryNotFound = true;
-					for (int i = 0; i < globalHistoryTable.size(); i++) {
-						if (globalHistoryTable.get(i)[0] == (pc.getValue()))
-							entryNotFound = false;
-					}
-					if (entryNotFound) {
-						long[] newEntry = {pc.getValue(), 0, 1, 2, 3};
-						globalHistoryTable.add(newEntry);
-					}
-					long[] branchPredictionRow = new long[5];
-					for (int i = 0; i < globalHistoryTable.size(); i++) {
-						if (globalHistoryTable.get(i)[0] == (pc.getValue())) {
-							branchPredictionRow = globalHistoryTable.get(i);
-						}
-					}
-					long prediction = branchPredictionRow[1+globalBranchHistory%4];
-					logger.info("Predicting: " +  Long.toString(prediction));
-
-				}
-				pc.writeDoubleWord((pc.getValue())+4);
+				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
+				pc.writeDoubleWord((pc.getValue())+offset);
 			}
 			else
 			{
