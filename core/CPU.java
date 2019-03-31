@@ -24,6 +24,7 @@
 package edumips64.core;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
 import core.BranchPredictor;
@@ -78,7 +79,9 @@ public class CPU
     public static final int CODELIMIT = 1024;	// bus da 12 bit (2^12 / 4)
     public static final int DATALIMIT = 512;	// bus da 12 bit (2^12 / 8)
 
-	
+	public static Semaphore sem1 = new Semaphore(1);
+	public static Semaphore sem2 = new Semaphore(1);
+
 	private static CPU cpu;
 
 	/** Statistics */
@@ -292,6 +295,17 @@ public class CPU
 				old_pc.writeDoubleWord((pc.getValue()));
 				//Add IF logic here
 				Instruction nextCommand = pipe.get(PipeStatus.IF);
+				try {
+					CPU.mutex.acquire();
+					try {
+						logger.info("mutex acquired by " + nextCommand.getFullName() + " IF");
+					} finally {
+						logger.info("mutex released by " + nextCommand.getFullName() + " IF");
+						CPU.mutex.release();
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
 				pc.writeDoubleWord((pc.getValue())+offset);
 			}

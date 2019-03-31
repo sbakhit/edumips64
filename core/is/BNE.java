@@ -24,6 +24,7 @@
  */
 
 package edumips64.core.is;
+import core.BranchPredictor;
 import edumips64.core.*;
 import edumips64.utils.*;
 /** <pre>
@@ -53,25 +54,102 @@ public class BNE extends FlowControl_IType {
         BitSet64 bs=new BitSet64();
         bs.writeHalf(params.get(OFFSET_FIELD));
         String offset=bs.getBinString();
+
+        //calculating actual branch outcome
         boolean condition=!rs.equals(rt);
-        if(condition)
-        {
+        logger.info("actual: " + condition);
+//        if(condition) {
+//            String pc_new="";
+//            Register pc=cpu.getPC();
+//            String pc_old=cpu.getPC().getBinString();
+//
+//            //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
+//            BitSet64 bs_temp=new BitSet64();
+//            bs_temp.writeDoubleWord(-4);
+//            pc_old=InstructionsUtils.twosComplementSum(pc_old,bs_temp.getBinString());
+//
+//            //updating program counter
+//            pc_new=InstructionsUtils.twosComplementSum(pc_old,offset);
+//            pc.setBits(pc_new,0);
+//
+//            logger.info("pc_old=" + pc_old);
+//            logger.info("pc_new=" + pc_new);
+//            logger.info("pc_old(from cpu)=" + cpu.getLastPC().getBinString());
+//            throw new JumpException();
+//        }
+
+        /* outcome   :   prediction
+        *  False  :   False: we cool
+        *  False  :   True: jump back to branch+4
+        *  True   :   False: take the branch
+        *  True   :   True: we cool
+        */
+        logger.info("pc: " + cpu.getPC());
+        logger.info("pc_old: " + cpu.getLastPC());
+        while(!CPU.mutex.tryAcquire()) {
+
+        }
+        try {
+            CPU.mutex.acquire();
+            try {
+                logger.info("mutex acquired by " + this.getFullName() + " ID");
+            } finally {
+                logger.info("mutex released by " + this.getFullName() + " ID");
+                CPU.mutex.release();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        boolean prediction = BranchPredictor.getPrediction(cpu.getPC().getValue());
+        logger.info("predicted: " + prediction);
+
+        if(!condition && prediction) {
+            /* misprediction: branch taken but should be not taken
+            * go back to branch
+            * fetch next instruction
+            * cpu.PC should be branch+4
+            */
+
             String pc_new="";
             Register pc=cpu.getPC();
             String pc_old=cpu.getPC().getBinString();
-            
+
            //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
+            BitSet64 bs_temp=new BitSet64();
+            bs_temp.writeDoubleWord(+4);
+            pc_new=InstructionsUtils.twosComplementSum(pc_old,bs_temp.getBinString());
+
+            //updating program counter
+//            BitSet64 zeroSet = new BitSet64();
+//            zeroSet.writeHalf(0);
+//            String zero = zeroSet.getBinString();
+//            pc_new=InstructionsUtils.twosComplementSum(pc_old,zero);
+            pc.setBits(pc_new,0);
+
+            assert pc.equals(pc_old);
+
+            logger.info("goto1: " + cpu.getPC().getBinString());
+
+            throw new JumpException();
+        } else if(condition && !prediction) {
+            // misprediction: branch not taken but should be taken
+            String pc_new="";
+            Register pc=cpu.getPC();
+            String pc_old=cpu.getPC().getBinString();
+
+            //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
             BitSet64 bs_temp=new BitSet64();
             bs_temp.writeDoubleWord(-4);
             pc_old=InstructionsUtils.twosComplementSum(pc_old,bs_temp.getBinString());
-           
+
             //updating program counter
             pc_new=InstructionsUtils.twosComplementSum(pc_old,offset);
             pc.setBits(pc_new,0);
-            
-            throw new JumpException(); 
-        }    
+
+            logger.info("goto2: " + cpu.getPC().getBinString());
+
+            throw new JumpException();
+        }
     }
 
-    
 }

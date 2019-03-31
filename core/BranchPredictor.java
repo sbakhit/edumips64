@@ -30,7 +30,7 @@ public class BranchPredictor {
                 long[] newEntry = new long[2 + (int) Math.pow(2, m)];
                 Arrays.fill(newEntry, m);
                 newEntry[0] = pc.getValue();
-                newEntry[newEntry.length-1] = 0;
+                newEntry[newEntry.length-1] = 1;
                 globalHistoryTable.add(newEntry);
             }
             // {PC,A,B,C,D, PreviousPrediction}
@@ -74,8 +74,6 @@ public class BranchPredictor {
                 return row;
             }
         }
-
-        //should never reach here
-        return new long[6];
+        throw new IllegalArgumentException();
     }
 }
