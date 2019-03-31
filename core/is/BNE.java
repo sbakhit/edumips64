@@ -86,21 +86,21 @@ public class BNE extends FlowControl_IType {
         */
         logger.info("pc: " + cpu.getPC());
         logger.info("pc_old: " + cpu.getLastPC());
-        while(!CPU.mutex.tryAcquire()) {
-
-        }
-        try {
-            CPU.mutex.acquire();
-            try {
-                logger.info("mutex acquired by " + this.getFullName() + " ID");
-            } finally {
-                logger.info("mutex released by " + this.getFullName() + " ID");
-                CPU.mutex.release();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        boolean prediction = BranchPredictor.getPrediction(cpu.getPC().getValue());
+//        while(!CPU.mutex.tryAcquire()) {
+//
+//        }
+//        try {
+//            CPU.mutex.acquire();
+//            try {
+//                logger.info("mutex acquired by " + this.getFullName() + " ID");
+//            } finally {
+//                logger.info("mutex released by " + this.getFullName() + " ID");
+//                CPU.mutex.release();
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        boolean prediction = BranchPredictor.getPrediction(cpu.getBeforeLastPC());
         logger.info("predicted: " + prediction);
 
         if(!condition && prediction) {

@@ -42,7 +42,7 @@ public class CPU
 
 	
     /** Program Counter*/
-	private Register pc,old_pc;
+	private Register pc,old_pc,before_old_pc;
 	private Register LO,HI;
 
     /** Pipeline status*/
@@ -81,6 +81,7 @@ public class CPU
 
 	public static Semaphore sem1 = new Semaphore(1);
 	public static Semaphore sem2 = new Semaphore(1);
+	Queue<Long> lastThreeInstructions = new LinkedList<>();
 
 	private static CPU cpu;
 
@@ -119,6 +120,11 @@ public class CPU
 		clearPipe();
 		currentPipeStatus = PipeStatus.IF;
 		logger.info("CPU Created.");
+
+		lastThreeInstructions.add((long)-12);
+		lastThreeInstructions.add((long)-8);
+		lastThreeInstructions.add((long)-4);
+		lastThreeInstructions.add((long)-0);
 	}
 
 	
@@ -295,19 +301,22 @@ public class CPU
 				old_pc.writeDoubleWord((pc.getValue()));
 				//Add IF logic here
 				Instruction nextCommand = pipe.get(PipeStatus.IF);
-				try {
-					CPU.mutex.acquire();
-					try {
-						logger.info("mutex acquired by " + nextCommand.getFullName() + " IF");
-					} finally {
-						logger.info("mutex released by " + nextCommand.getFullName() + " IF");
-						CPU.mutex.release();
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+//				try {
+//					CPU.mutex.acquire();
+//					try {
+//						logger.info("mutex acquired by " + nextCommand.getFullName() + " IF");
+//					} finally {
+//						logger.info("mutex released by " + nextCommand.getFullName() + " IF");
+//						CPU.mutex.release();
+//					}
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
 				pc.writeDoubleWord((pc.getValue())+offset);
+				lastThreeInstructions.add(pc.getValue() + offset);
+				lastThreeInstructions.remove();
+
 			}
 			else
 			{
@@ -338,6 +347,9 @@ public class CPU
 			pipe.put(PipeStatus.ID, Instruction.buildInstruction("BUBBLE"));	
 			old_pc.writeDoubleWord((pc.getValue()));
 			pc.writeDoubleWord((pc.getValue())+4);
+			lastThreeInstructions.add(pc.getValue() + 4);
+			lastThreeInstructions.remove();
+
 			if(syncex != null)
 				throw new SynchronousException(syncex);
 
@@ -374,6 +386,10 @@ public class CPU
 	public Register getLastPC() {
 		return old_pc;
 	}
+
+	public long getBeforeLastPC() {
+	return lastThreeInstructions.peek();
+}
 	
 	/** Gets the LO register. It contains integer results of doubleword division
 	* @return a Register object
