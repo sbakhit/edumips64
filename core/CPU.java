@@ -42,7 +42,7 @@ public class CPU
 
 	
     /** Program Counter*/
-	private Register pc,old_pc,before_old_pc;
+	private Register pc,old_pc;
 	private Register LO,HI;
 
     /** Pipeline status*/
@@ -121,10 +121,9 @@ public class CPU
 		currentPipeStatus = PipeStatus.IF;
 		logger.info("CPU Created.");
 
-		lastThreeInstructions.add((long) -12);
-		lastThreeInstructions.add((long) -8);
-		lastThreeInstructions.add((long) -4);
-//		lastThreeInstructions.add((long) 0);
+		lastThreeInstructions.add((long) 0);
+		lastThreeInstructions.add((long) 0);
+		lastThreeInstructions.add((long) 0);
 	}
 
 	
