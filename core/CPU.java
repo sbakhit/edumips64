@@ -121,10 +121,10 @@ public class CPU
 		currentPipeStatus = PipeStatus.IF;
 		logger.info("CPU Created.");
 
-		lastThreeInstructions.add((long)-12);
-		lastThreeInstructions.add((long)-8);
-		lastThreeInstructions.add((long)-4);
-		lastThreeInstructions.add((long)-0);
+		lastThreeInstructions.add((long) -12);
+		lastThreeInstructions.add((long) -8);
+		lastThreeInstructions.add((long) -4);
+//		lastThreeInstructions.add((long) 0);
 	}
 
 	
@@ -314,7 +314,7 @@ public class CPU
 //				}
 				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
 				pc.writeDoubleWord((pc.getValue())+offset);
-				lastThreeInstructions.add(pc.getValue() + offset);
+				lastThreeInstructions.add(pc.getValue());
 				lastThreeInstructions.remove();
 
 			}
@@ -347,7 +347,7 @@ public class CPU
 			pipe.put(PipeStatus.ID, Instruction.buildInstruction("BUBBLE"));	
 			old_pc.writeDoubleWord((pc.getValue()));
 			pc.writeDoubleWord((pc.getValue())+4);
-			lastThreeInstructions.add(pc.getValue() + 4);
+			lastThreeInstructions.add(pc.getValue());
 			lastThreeInstructions.remove();
 
 			if(syncex != null)
@@ -387,9 +387,7 @@ public class CPU
 		return old_pc;
 	}
 
-	public long getBeforeLastPC() {
-	return lastThreeInstructions.peek();
-}
+	public Long getBeforeLastPC() { return lastThreeInstructions.peek(); }
 	
 	/** Gets the LO register. It contains integer results of doubleword division
 	* @return a Register object
