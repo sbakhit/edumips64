@@ -55,7 +55,8 @@
          filename to edumips64-svn.jar -->
 	<target name="svnjar" depends="init">
         <javac
-            target="5"
+			target="1.7"
+			source="7"
             srcdir="${sourceDir}"
             classpath="${helpClassesDir}"
             destdir="${outputDir}"

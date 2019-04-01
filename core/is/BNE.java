@@ -86,21 +86,21 @@ public class BNE extends FlowControl_IType {
         */
         logger.info("pc: " + cpu.getPC());
         logger.info("pc_old: " + cpu.getLastPC());
-        while(!CPU.mutex.tryAcquire()) {
-
-        }
-        try {
-            CPU.mutex.acquire();
-            try {
-                logger.info("mutex acquired by " + this.getFullName() + " ID");
-            } finally {
-                logger.info("mutex released by " + this.getFullName() + " ID");
-                CPU.mutex.release();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        boolean prediction = BranchPredictor.getPrediction(cpu.getPC().getValue());
+//        while(!CPU.mutex.tryAcquire()) {
+//
+//        }
+//        try {
+//            CPU.mutex.acquire();
+//            try {
+//                logger.info("mutex acquired by " + this.getFullName() + " ID");
+//            } finally {
+//                logger.info("mutex released by " + this.getFullName() + " ID");
+//                CPU.mutex.release();
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        boolean prediction = BranchPredictor.getPrediction(cpu.getBeforeLastPC());
         logger.info("predicted: " + prediction);
 
         if(!condition && prediction) {
@@ -114,19 +114,23 @@ public class BNE extends FlowControl_IType {
             Register pc=cpu.getPC();
             String pc_old=cpu.getPC().getBinString();
 
-           //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
+            //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
             BitSet64 bs_temp=new BitSet64();
             bs_temp.writeDoubleWord(+4);
-            pc_new=InstructionsUtils.twosComplementSum(pc_old,bs_temp.getBinString());
 
-            //updating program counter
+            BitSet64 bs_PC=new BitSet64();
+            bs_PC.writeDoubleWord(cpu.getBeforeLastPC());
+
+            pc_new=InstructionsUtils.twosComplementSum(bs_PC.getBinString(),bs_temp.getBinString());
+
+//            updating program counter
 //            BitSet64 zeroSet = new BitSet64();
 //            zeroSet.writeHalf(0);
 //            String zero = zeroSet.getBinString();
 //            pc_new=InstructionsUtils.twosComplementSum(pc_old,zero);
-            pc.setBits(pc_new,0);
+            pc.setBits( pc_new,0);
 
-            assert pc.equals(pc_old);
+//            assert pc.equals(pc_old);
 
             logger.info("goto1: " + cpu.getPC().getBinString());
 
