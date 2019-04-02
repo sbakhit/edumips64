@@ -25,6 +25,8 @@
 
 package edumips64.core.is;
 
+import core.BranchCorrector;
+import core.BranchPredictor;
 import edumips64.core.*;
 import edumips64.utils.*;
 /** <pre>
@@ -58,24 +60,17 @@ public class BNEZ extends FlowControl_IType
 		BitSet64 bs=new BitSet64();
 		bs.writeHalf(params.get(OFFSET_FIELD));
 		String offset=bs.getBinString();
+
+		logger.info("BRANCH INSTRUCTION " + this.name);
+
+		//calculating actual branch outcome
 		boolean condition = ! rs.equals(zero);
-		if(condition)
-		{
-			String pc_new="";
-			Register pc=cpu.getPC();
-			String pc_old=cpu.getPC().getBinString();
+		logger.info("Expected: " + condition);
 
-			//subtracting 4 to the pc_old temporary variable using bitset64 safe methods
-			BitSet64 bs_temp=new BitSet64();
-			bs_temp.writeDoubleWord(-4);
-			pc_old=InstructionsUtils.twosComplementSum(pc_old,bs_temp.getBinString());
+		boolean prediction = BranchPredictor.getPrediction(cpu.getBeforeLastPC());
+		logger.info("Predicted: " + prediction);
 
-			//updating program counter
-			pc_new=InstructionsUtils.twosComplementSum(pc_old,offset);
-			pc.setBits(pc_new,0);
-
-			throw new JumpException(); 
-		}
+		BranchCorrector.correctPrediction(condition, prediction, offset, cpu.getBeforeLastPC(), cpu.getPC(), logger);
 	}
 	public void pack() throws IrregularStringOfBitsException {
 
