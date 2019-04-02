@@ -36,8 +36,7 @@ public class BranchPredictor {
             // {PC,A,B,C,D, PreviousPrediction}
             long[] branchPredictionRow = getRow(pc.getValue());
             //First entry in this row is the PC, we want to look at all the other entries {A/B/C/D...}
-            int columnPrediction = (int) Math.pow(2, m);
-            long prediction = branchPredictionRow[1 + globalBranchHistory % columnPrediction];
+            long prediction = branchPredictionRow[1 + globalBranchHistory];
 
             if (prediction / n == 0) {
                 //Predict Not taken
@@ -69,7 +68,45 @@ public class BranchPredictor {
         return row[row.length - 1] == 1;
     }
 
-    private static long[] getRow(Long pc) {
+    public static void updatePrediction(Long branchPC, boolean taken) {
+        long[] modifiedRow = getRow(branchPC);
+        setLocalBranchHistory(modifiedRow, taken);
+        setGlobalBranchHistory(taken);
+        for (int i =0; i<globalHistoryTable.size() ; i++ ) {
+            if (globalHistoryTable.get(i)[0] == modifiedRow[0]) {
+                globalHistoryTable.set(i,modifiedRow);
+            }
+        }
+    }
+
+    private static void setLocalBranchHistory(long[] row, boolean taken){
+        long valueToUpdate = row[1+globalBranchHistory];
+        row[1+globalBranchHistory] = updateValueInRowOrGlobalBranchHistory(taken, valueToUpdate, n);
+    }
+
+    private static void setGlobalBranchHistory(boolean taken){
+        globalBranchHistory = (int) updateValueInRowOrGlobalBranchHistory(taken, globalBranchHistory, m);
+    }
+
+    private static long updateValueInRowOrGlobalBranchHistory(boolean taken, long valueToUpdate, int sizeOfElement) {
+        //taken increments the localStateMachine
+        //not taken decrements the localStateMachine
+        if (taken){
+            valueToUpdate++;
+            // We have 2^m columns in our table. The max index of predictors is (2^m)-1
+            if (valueToUpdate > Math.pow(sizeOfElement,2) -1){
+                valueToUpdate = (int) (Math.pow(sizeOfElement,2) -1);
+            }
+        } else {
+            valueToUpdate--;
+            if (valueToUpdate < 0) {
+                valueToUpdate = 0;
+            }
+        }
+        return valueToUpdate;
+    }
+
+    private static long[] getRow(Long pc){
         for (long[] row : globalHistoryTable) {
             if (row[0] == pc) {
                 return row;
