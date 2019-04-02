@@ -68,6 +68,29 @@ public class BranchPredictor {
         return row[row.length-1] == 1;
     }
 
+    public static void updatePrediction(Long branchPC, boolean taken) {
+        long[] row = getRow(branchPC);
+        setGlobalBranchHistory(taken);
+
+    }
+
+    private static void setGlobalBranchHistory(boolean taken){
+        //taken increments the counter
+        //not taken decrements the counter
+        if (taken){
+            globalBranchHistory++;
+            // We have 2^m columns in our table. The max index of predictors is (2^m)-1
+            if (globalBranchHistory > Math.pow(m,2) -1){
+                globalBranchHistory = 3;
+            }
+        } else {
+            globalBranchHistory--;
+            if (globalBranchHistory < 0) {
+                globalBranchHistory = 0;
+            }
+        }
+    }
+
     private static long[] getRow(Long pc){
         for (long[] row : globalHistoryTable) {
             if (row[0] == pc) {
