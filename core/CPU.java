@@ -79,8 +79,6 @@ public class CPU
     public static final int CODELIMIT = 1024;	// bus da 12 bit (2^12 / 4)
     public static final int DATALIMIT = 512;	// bus da 12 bit (2^12 / 8)
 
-	public static Semaphore sem1 = new Semaphore(1);
-	public static Semaphore sem2 = new Semaphore(1);
 	Queue<Long> lastThreeInstructions = new LinkedList<>();
 
 	private static CPU cpu;
@@ -315,7 +313,6 @@ public class CPU
 				pc.writeDoubleWord((pc.getValue())+offset);
 				lastThreeInstructions.add(pc.getValue());
 				lastThreeInstructions.remove();
-
 			}
 			else
 			{

@@ -15,7 +15,7 @@ public class BranchPredictor {
     private static int n = 2;
 
 
-    public static long makePrediction(Instruction nextInstruction, Register pc, Logger logger){
+    public static long makePrediction(Instruction nextInstruction, Register pc, Logger logger) {
         String commandName = nextInstruction.getName();
         if (commandName.equals("BEQ") || commandName.equals("BEQZ") || commandName.equals("BGEZ") || commandName.equals("BNE")
                 || commandName.equals("BNEZ")) {
@@ -30,7 +30,7 @@ public class BranchPredictor {
                 long[] newEntry = new long[2 + (int) Math.pow(2, m)];
                 Arrays.fill(newEntry, m);
                 newEntry[0] = pc.getValue();
-                newEntry[newEntry.length-1] = 1;
+                newEntry[newEntry.length - 1] = 1;
                 globalHistoryTable.add(newEntry);
             }
             // {PC,A,B,C,D, PreviousPrediction}
@@ -38,23 +38,23 @@ public class BranchPredictor {
             //First entry in this row is the PC, we want to look at all the other entries {A/B/C/D...}
             long prediction = branchPredictionRow[1 + globalBranchHistory];
 
-            if (prediction / n == 0){
+            if (prediction / n == 0) {
                 //Predict Not taken
                 long[] row = getRow(pc.getValue());
-                row[row.length-1] = 0;
+                row[row.length - 1] = 0;
                 return 4;
             } else {
                 //Predict Taken
-                BitSet64 bs=new BitSet64();
+                BitSet64 bs = new BitSet64();
 
                 //The offset value is found at different places depending on the Branch type
                 int offsetField = 1;
-                if (commandName.equals("BEQ") || commandName.equals("BNE")){
+                if (commandName.equals("BEQ") || commandName.equals("BNE")) {
                     offsetField = 2;
                 }
                 //set the PreviousPrediction to true
                 long[] row = getRow(pc.getValue());
-                row[row.length-1] = 1;
+                row[row.length - 1] = 1;
                 // Next instruction will be at offset + 4
                 int offset = nextInstruction.getParams().get(offsetField);
                 return offset + 4;
@@ -62,9 +62,10 @@ public class BranchPredictor {
         }
         return 4;
     }
+
     public static boolean getPrediction(Long pc) {
         long[] row = getRow(pc);
-        return row[row.length-1] == 1;
+        return row[row.length - 1] == 1;
     }
 
     public static void updatePrediction(Long branchPC, boolean taken) {
