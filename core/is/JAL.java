@@ -51,7 +51,7 @@ public class JAL extends FlowControl_JType {
     {
         //saving PC value into a temporary register
         cpu.getRegister(31).incrWriteSemaphore();  //deadlock !!!
-        TR[PC_VALUE].writeDoubleWord(cpu.getPC().getValue()-4);
+        TR[PC_VALUE].writeDoubleWord(cpu.getLastPC().getValue());
         //converting INSTR_INDEX into a bynary value of 26 bits in length
         String instr_index=Converter.positiveIntToBin(28,params.get(INSTR_INDEX));  
         //appending the 35 most significant bits of the program counter on the left of "instr_index"

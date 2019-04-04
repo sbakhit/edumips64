@@ -36,7 +36,7 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto1: " + pc.getHexString());
-
+            BranchPredictor.updatePrediction(PC_Branch, condition);
             throw new JumpException();
         } else if (condition && !prediction) {
             /*
@@ -57,6 +57,7 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto2: " + pc.getHexString());
+            BranchPredictor.updatePrediction(PC_Branch, condition);
 
             throw new JumpException();
         }

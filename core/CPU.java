@@ -42,7 +42,7 @@ public class CPU
 
 	
     /** Program Counter*/
-	private Register pc,old_pc;
+	private Register pc,old_pc,before_old_pc;
 	private Register LO,HI;
 
     /** Pipeline status*/
@@ -110,6 +110,7 @@ public class CPU
 			gpr[i] = new Register();
 		pc = new Register();
 		old_pc = new Register();
+		before_old_pc = new Register();
 		LO=new Register();
 		HI=new Register();
 
@@ -224,16 +225,15 @@ public class CPU
 
 		if(status != CPUStatus.RUNNING && status != CPUStatus.STOPPING)
 			throw new StoppedCPUException();
-		try
-		{
+		try {
 			logger.info("Starting cycle " + ++cycles + "\n---------------------------------------------");
-			currentPipeStatus = PipeStatus.WB; 
+			currentPipeStatus = PipeStatus.WB;
 
 			// Let's execute the WB() method of the instruction located in the 
 			// WB pipeline status
-			if(pipe.get(PipeStatus.WB)!=null) {
+			if (pipe.get(PipeStatus.WB) != null) {
 				pipe.get(PipeStatus.WB).WB();
-				if(!pipe.get(PipeStatus.WB).getName().equals(" "))
+				if (!pipe.get(PipeStatus.WB).getName().equals(" "))
 					instructions++;
 			}
 
@@ -244,7 +244,7 @@ public class CPU
 
 			// MEM
 			currentPipeStatus = PipeStatus.MEM;
-			if(pipe.get(PipeStatus.MEM)!=null)
+			if (pipe.get(PipeStatus.MEM) != null)
 				pipe.get(PipeStatus.MEM).MEM();
 			pipe.put(PipeStatus.WB, pipe.get(PipeStatus.MEM));
 
@@ -252,18 +252,16 @@ public class CPU
 			try {
 				// Handling synchronous exceptions
 				currentPipeStatus = PipeStatus.EX;
-				if(pipe.get(PipeStatus.EX)!=null)
+				if (pipe.get(PipeStatus.EX) != null)
 					pipe.get(PipeStatus.EX).EX();
-			}
-			catch (SynchronousException e) {
-				if(masked)
+			} catch (SynchronousException e) {
+				if (masked)
 					logger.info("[EXCEPTION] [MASKED] " + e.getCode());
 				else {
-					if(terminate) {
+					if (terminate) {
 						logger.info("Terminating due to an unmasked exception");
 						throw new SynchronousException(e.getCode());
-					}
-					else
+					} else
 						// We must complete this cycle, but we must notify the user.
 						// If the syncex string is not null, the CPU code will throw
 						// the exception at the end of the step
@@ -274,8 +272,10 @@ public class CPU
 
 			// ID
 			currentPipeStatus = PipeStatus.ID;
-			if(pipe.get(PipeStatus.ID)!=null)
+			if (pipe.get(PipeStatus.ID) != null){
+				logger.info("The last instruction is: " + this.getBeforeLastPC());
 				pipe.get(PipeStatus.ID).ID();
+			}
 			pipe.put(PipeStatus.EX, pipe.get(PipeStatus.ID));
 
 			// IF
@@ -294,23 +294,16 @@ public class CPU
 					}
 				}
 				pipe.put(PipeStatus.ID, pipe.get(PipeStatus.IF));
+
 				pipe.put(PipeStatus.IF, mem.getInstruction(pc));
+				before_old_pc.writeDoubleWord(old_pc.getValue());
 				old_pc.writeDoubleWord((pc.getValue()));
 				//Add IF logic here
 				Instruction nextCommand = pipe.get(PipeStatus.IF);
-//				try {
-//					CPU.mutex.acquire();
-//					try {
-//						logger.info("mutex acquired by " + nextCommand.getFullName() + " IF");
-//					} finally {
-//						logger.info("mutex released by " + nextCommand.getFullName() + " IF");
-//						CPU.mutex.release();
-//					}
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
 				long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
 				pc.writeDoubleWord((pc.getValue())+offset);
+//				pipe.put(PipeStatus.IF, mem.getInstruction(pc));
+
 				lastThreeInstructions.add(pc.getValue());
 				lastThreeInstructions.remove();
 			}
@@ -338,11 +331,19 @@ public class CPU
 
 			// A J-Type instruction has just modified the Program Counter. We need to
 			// put in the IF state the instruction the PC points to
+
 			pipe.put(PipeStatus.IF, mem.getInstruction(pc));
+
 			pipe.put(PipeStatus.EX, pipe.get(PipeStatus.ID));
-			pipe.put(PipeStatus.ID, Instruction.buildInstruction("BUBBLE"));	
+			pipe.put(PipeStatus.ID, Instruction.buildInstruction("BUBBLE"));
+
+			before_old_pc.writeDoubleWord(old_pc.getValue());
 			old_pc.writeDoubleWord((pc.getValue()));
-			pc.writeDoubleWord((pc.getValue())+4);
+			Instruction nextCommand = pipe.get(PipeStatus.IF);
+			long offset = BranchPredictor.makePrediction(nextCommand, pc, logger);
+			pc.writeDoubleWord((pc.getValue())+offset);
+//			pipe.put(PipeStatus.IF, mem.getInstruction(pc));
+
 			lastThreeInstructions.add(pc.getValue());
 			lastThreeInstructions.remove();
 
@@ -383,7 +384,7 @@ public class CPU
 		return old_pc;
 	}
 
-	public Long getBeforeLastPC() { return lastThreeInstructions.peek(); }
+	public Long getBeforeLastPC() { return before_old_pc.getValue(); }
 	
 	/** Gets the LO register. It contains integer results of doubleword division
 	* @return a Register object

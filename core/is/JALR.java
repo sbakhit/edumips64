@@ -48,7 +48,7 @@ public class JALR extends FlowControl_RType {
     {
         //saving PC value into a temporary register
         cpu.getRegister(31).incrWriteSemaphore();  //deadlock !!!
-        TR[PC_VALUE].writeDoubleWord(cpu.getPC().getValue()-4);
+        TR[PC_VALUE].writeDoubleWord(cpu.getLastPC().getValue());
         cpu.getPC().setBits(cpu.getRegister(params.get(RS_FIELD)).getBinString(),0);
         if(enableForwarding)
         {
