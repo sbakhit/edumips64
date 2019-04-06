@@ -68,6 +68,11 @@ public class BranchPredictor {
         return row[row.length - 1] == 1;
     }
 
+    public static void reset() {
+        globalHistoryTable = new ArrayList<>();
+        globalBranchHistory = 0;
+    }
+
     public static void updatePrediction(Long branchPC, boolean taken) {
         long[] modifiedRow = getRow(branchPC);
         setLocalBranchHistory(modifiedRow, taken);
