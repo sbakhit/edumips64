@@ -28,7 +28,7 @@ public class BranchPredictor {
             }
             if (entryNotFound) {
                 long[] newEntry = new long[2 + (int) Math.pow(2, m)];
-                Arrays.fill(newEntry, n-1);
+                Arrays.fill(newEntry, n);
                 newEntry[0] = pc.getValue();
                 newEntry[newEntry.length - 1] = 1;
                 globalHistoryTable.add(newEntry);
