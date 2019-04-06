@@ -84,7 +84,7 @@ public class CPU
 	private static CPU cpu;
 
 	/** Statistics */
-	private int cycles, instructions, RAWStalls; 
+	private int cycles, instructions, RAWStalls, branchMisses;
 
 	/** Static initializer */
 	static {
@@ -204,6 +204,14 @@ public class CPU
 	 */
 	public int getRAWStalls() {
 		return RAWStalls;
+	}
+
+	public int getBranchMisses() {
+		return branchMisses;
+	}
+
+	public void incBranchMisses() {
+		branchMisses++;
 	}
 
     /** This method performs a single pipeline step

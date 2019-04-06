@@ -21,6 +21,9 @@ public class BranchCorrector {
              *
              * set PC to branch+4
              */
+            //increment number of misses
+            cpu.incBranchMisses();
+
             String pc_new = "";
             Register pc = cpu.getPC();
 
@@ -47,6 +50,9 @@ public class BranchCorrector {
              *
              * set PC to offset
              */
+            //increment number of misses
+            cpu.incBranchMisses();
+
             String pc_new = "";
             Register pc = cpu.getPC();
             String pc_old;
