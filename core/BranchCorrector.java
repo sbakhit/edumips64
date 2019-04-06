@@ -36,7 +36,6 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto1: " + pc.getHexString());
-
             // update correlating predictor
             BranchPredictor.updatePrediction(branchPC, false);
 
@@ -60,7 +59,7 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto2: " + pc.getHexString());
-
+            
             // update correlating predictor
             BranchPredictor.updatePrediction(branchPC, true);
 
