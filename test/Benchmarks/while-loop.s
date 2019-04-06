@@ -1,4 +1,8 @@
-li R1, 0
-LOOP:	daddi R1, R1, 1
-		bne R1, 15
-END:	li R2, 10
+.data
+
+.code
+daddi r2,r0,15          ; store 15 in r2
+start:  daddi r1, r1, 1 ; increment r1
+		bne	r1,r2,start	 ; loop back if r1 != 15
+
+quit:		SYSCALL 0		; exit
