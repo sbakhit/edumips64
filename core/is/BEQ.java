@@ -64,15 +64,20 @@ public class BEQ extends FlowControl_IType {
         String offset = bs.getBinString();
 
         logger.info("BRANCH INSTRUCTION " + this.name);
+        logger.info("pc: " + cpu.getPC());
+        logger.info("pc_last: " + cpu.getLastPC());
+//        logger.info("pc_before_last: " + cpu.getBeforeLastPC());
+        Long branchPC = cpu.getLastBranch();
+        logger.info("last seen branch (this one?): " + branchPC);
 
         //calculating actual branch outcome
         boolean condition = rs.equals(rt);
         logger.info("Expected: " + condition);
 
-        boolean prediction = BranchPredictor.getPrediction(cpu.getBeforeLastPC());
+        boolean prediction = BranchPredictor.getPrediction(branchPC);
         logger.info("Predicted: " + prediction);
 
-        BranchCorrector.correctPrediction(condition, prediction, offset, cpu.getBeforeLastPC(), cpu.getPC(), logger);
+        BranchCorrector.correctPrediction(condition, prediction, offset, branchPC, cpu.getPC(), logger);
     }
 
 
