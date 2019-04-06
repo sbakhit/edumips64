@@ -420,6 +420,7 @@ public class CPU
 		cycles = 0;
 		instructions = 0;
 		RAWStalls = 0;
+		branchMisses = 0;
 		BranchPredictor.reset();
 		// Reset dei registri
         for(int i = 0; i < 32; i++)
