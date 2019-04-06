@@ -1,6 +1,7 @@
 package core;
 
 import edumips64.core.BitSet64;
+import edumips64.core.CPU;
 import edumips64.core.IrregularWriteOperationException;
 import edumips64.core.Register;
 import edumips64.core.is.InstructionsUtils;
@@ -12,7 +13,7 @@ import java.util.logging.Logger;
 
 public class BranchCorrector {
 
-    public static void correctPrediction(boolean condition, boolean prediction, String offset, Long branchPC, Register pc, Logger logger)
+    public static void correctPrediction(boolean condition, boolean prediction, String offset, CPU cpu, Logger logger)
             throws IrregularWriteOperationException, IrregularStringOfBitsException, TwosComplementSumException, JumpException {
         if (!condition && prediction) {
             /*
@@ -21,14 +22,14 @@ public class BranchCorrector {
              * set PC to branch+4
              */
             String pc_new = "";
-            String pc_old = pc.getBinString();
+            Register pc = cpu.getPC();
 
             //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
             BitSet64 bs_temp = new BitSet64();
             bs_temp.writeDoubleWord(+4);
 
             BitSet64 bs_PC = new BitSet64();
-            bs_PC.writeDoubleWord(branchPC);
+            bs_PC.writeDoubleWord(cpu.getBeforeLastPC());
 
             pc_new = InstructionsUtils.twosComplementSum(bs_PC.getBinString(), bs_temp.getBinString());
 
@@ -37,7 +38,7 @@ public class BranchCorrector {
 
             logger.info("goto1: " + pc.getHexString());
             // update correlating predictor
-            BranchPredictor.updatePrediction(branchPC, false);
+            BranchPredictor.updatePrediction(cpu.getBeforeLastPC(), false);
 
             throw new JumpException();
         } else if (condition && !prediction) {
@@ -47,12 +48,17 @@ public class BranchCorrector {
              * set PC to offset
              */
             String pc_new = "";
-            String pc_old = pc.getBinString();
+            Register pc = cpu.getPC();
+            String pc_old;
 
             //subtracting 4 to the pc_old temporary variable using bitset64 safe methods
             BitSet64 bs_temp = new BitSet64();
-            bs_temp.writeDoubleWord(-4);
-            pc_old = InstructionsUtils.twosComplementSum(pc_old, bs_temp.getBinString());
+            bs_temp.writeDoubleWord(+4);
+
+            BitSet64 bs_PC = new BitSet64();
+            bs_PC.writeDoubleWord(cpu.getBeforeLastPC());
+
+            pc_old = InstructionsUtils.twosComplementSum(bs_PC.getBinString(), bs_temp.getBinString());
 
             //updating program counter
             pc_new = InstructionsUtils.twosComplementSum(pc_old, offset);
@@ -61,7 +67,7 @@ public class BranchCorrector {
             logger.info("goto2: " + pc.getHexString());
             
             // update correlating predictor
-            BranchPredictor.updatePrediction(branchPC, true);
+            BranchPredictor.updatePrediction(cpu.getBeforeLastPC(), true);
 
             throw new JumpException();
         }

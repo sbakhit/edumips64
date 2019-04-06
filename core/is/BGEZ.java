@@ -66,18 +66,16 @@ public class BGEZ extends FlowControl_IType {
         logger.info("BRANCH INSTRUCTION " + this.name);
         logger.info("pc: " + cpu.getPC());
         logger.info("pc_last: " + cpu.getLastPC());
-//        logger.info("pc_before_last: " + cpu.getBeforeLastPC());
-        Long branchPC = cpu.getLastBranch();
-        logger.info("last seen branch (this one?): " + branchPC);
+        logger.info("pc_before_last: " + cpu.getBeforeLastPC());
 
         //calculating actual branch outcome
         boolean condition = rs.charAt(0) == '0';
         logger.info("Expected: " + condition);
 
-        boolean prediction = BranchPredictor.getPrediction(branchPC);
+        boolean prediction = BranchPredictor.getPrediction(cpu.getBeforeLastPC());
         logger.info("Predicted: " + prediction);
 
-        BranchCorrector.correctPrediction(condition, prediction, offset, branchPC, cpu.getPC(), logger);
+        BranchCorrector.correctPrediction(condition, prediction, offset, cpu, logger);
     }
 
     public void pack() throws IrregularStringOfBitsException {
