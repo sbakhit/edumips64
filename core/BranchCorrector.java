@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class BranchCorrector {
 
-    public static void correctPrediction(boolean condition, boolean prediction, String offset, Long PC_Branch, Register pc, Logger logger)
+    public static void correctPrediction(boolean condition, boolean prediction, String offset, Long branchPC, Register pc, Logger logger)
             throws IrregularWriteOperationException, IrregularStringOfBitsException, TwosComplementSumException, JumpException {
         if (!condition && prediction) {
             /*
@@ -28,7 +28,7 @@ public class BranchCorrector {
             bs_temp.writeDoubleWord(+4);
 
             BitSet64 bs_PC = new BitSet64();
-            bs_PC.writeDoubleWord(PC_Branch);
+            bs_PC.writeDoubleWord(branchPC);
 
             pc_new = InstructionsUtils.twosComplementSum(bs_PC.getBinString(), bs_temp.getBinString());
 
@@ -36,6 +36,9 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto1: " + pc.getHexString());
+
+            // update correlating predictor
+            BranchPredictor.updatePrediction(branchPC, false);
 
             throw new JumpException();
         } else if (condition && !prediction) {
@@ -57,6 +60,9 @@ public class BranchCorrector {
             pc.setBits(pc_new, 0);
 
             logger.info("goto2: " + pc.getHexString());
+
+            // update correlating predictor
+            BranchPredictor.updatePrediction(branchPC, true);
 
             throw new JumpException();
         }
