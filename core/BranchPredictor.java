@@ -1,6 +1,7 @@
 package core;
 
 import edumips64.core.BitSet64;
+import edumips64.core.CPU;
 import edumips64.core.Register;
 import edumips64.core.is.Instruction;
 

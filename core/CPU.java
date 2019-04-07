@@ -84,7 +84,7 @@ public class CPU
 	private static CPU cpu;
 
 	/** Statistics */
-	private int cycles, instructions, RAWStalls, branchMisses;
+	private int cycles, instructions, RAWStalls, branches, branchMisses;
 
 	/** Static initializer */
 	static {
@@ -205,6 +205,10 @@ public class CPU
 	public int getRAWStalls() {
 		return RAWStalls;
 	}
+
+	public int getBranches() { return branches; }
+
+	public void incBranches() { branches++; }
 
 	public int getBranchMisses() {
 		return branchMisses;
@@ -421,6 +425,7 @@ public class CPU
 		instructions = 0;
 		RAWStalls = 0;
 		branchMisses = 0;
+		branches = 0;
 		BranchPredictor.reset();
 		// Reset dei registri
         for(int i = 0; i < 32; i++)

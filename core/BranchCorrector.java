@@ -15,6 +15,9 @@ public class BranchCorrector {
 
     public static void correctPrediction(boolean condition, boolean prediction, String offset, CPU cpu, Logger logger)
             throws IrregularWriteOperationException, IrregularStringOfBitsException, TwosComplementSumException, JumpException {
+        //update number of branches
+        cpu.incBranches();
+
         if (!condition && prediction) {
             /*
              * predicted taken but is not taken
