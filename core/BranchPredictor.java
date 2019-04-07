@@ -12,7 +12,7 @@ public class BranchPredictor {
     private static ArrayList<long[]> globalHistoryTable = new ArrayList<>();
     private static int globalBranchHistory = 0;
     private static int m = 2;
-    private static int n = 2;
+    private static int n = 1;
 
 
     public static long makePrediction(Instruction nextInstruction, Register pc, Logger logger) {
@@ -28,7 +28,7 @@ public class BranchPredictor {
             }
             if (entryNotFound) {
                 long[] newEntry = new long[2 + (int) Math.pow(2, m)];
-                Arrays.fill(newEntry, n);
+                Arrays.fill(newEntry, n-1);
                 newEntry[0] = pc.getValue();
                 newEntry[newEntry.length - 1] = 1;
                 globalHistoryTable.add(newEntry);
@@ -97,12 +97,20 @@ public class BranchPredictor {
         //taken increments the localStateMachine
         //not taken decrements the localStateMachine
         if (taken){
+            if(valueToUpdate == Math.pow(2,sizeOfElement-1) -1){
+                valueToUpdate = (long) (Math.pow(2,sizeOfElement) -1);
+                return valueToUpdate;
+            }
             valueToUpdate++;
             // We have 2^m columns in our table. The max index of predictors is (2^m)-1
-            if (valueToUpdate > Math.pow(sizeOfElement,2) -1){
-                valueToUpdate = (int) (Math.pow(sizeOfElement,2) -1);
+            if (valueToUpdate > Math.pow(2,sizeOfElement) -1){
+                valueToUpdate = (int) (Math.pow(2,sizeOfElement) -1);
             }
         } else {
+            if (valueToUpdate == Math.pow(2,sizeOfElement-1)){
+                valueToUpdate = 0;
+                return valueToUpdate;
+            }
             valueToUpdate--;
             if (valueToUpdate < 0) {
                 valueToUpdate = 0;
