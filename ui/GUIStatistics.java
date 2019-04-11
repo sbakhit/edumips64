@@ -162,9 +162,9 @@ public class GUIStatistics extends GUIComponent {
 						return label;
 					case 11:
 						if(branches != 1)
-							label.setText(" " + branches + " " + CurrentLocale.getString("BTS"));
+							label.setText(" " + branches + " Branches");
 						else
-							label.setText(" " + branches + " " + CurrentLocale.getString("BTS"));
+							label.setText(" " + branches + " Branches");
 						label.setFont(f);
 						return label;
 					case 12:
