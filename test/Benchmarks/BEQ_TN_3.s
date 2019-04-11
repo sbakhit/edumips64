@@ -45,6 +45,8 @@ loop5: daddi r3,r3,234
 	ddiv  r3,r2	    
 	
 	beq R4, R5, loop5	;Taken
+	dmult r3,r2 
+	ddiv  r3,r2	 
 
 loop5: daddi r2,r3,25
 	ddiv r3,r2
